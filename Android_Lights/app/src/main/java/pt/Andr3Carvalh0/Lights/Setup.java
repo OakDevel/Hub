@@ -2,32 +2,66 @@ package pt.Andr3Carvalh0.Lights;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 
 public class Setup extends Activity {
-    ListView Paired_Devices;
+    private RecyclerView Paired_Devices;
+    private RecycleView_Adapter Paired_Devices_Layout;
+
+    List<RecycleView_Element> data = new ArrayList<>();
+    //int[] device_Types = {R.drawable.ic_DEVICE_TYPE_UNKNOWN, R.drawable.ic_DEVICE_TYPE_CLASSIC, R.drawable.ic_DEVICE_TYPE_LE, R.drawable.ic_DEVICE_TYPE_DUAL};
 
     private BluetoothAdapter Bluetooth;
-    private ArrayAdapter<String> Paired_Devices_Elements;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
 
-        //Initialize our arrayAdapter
-        Paired_Devices_Elements = new ArrayAdapter<String>(this, R.layout.bluetooth_devices);
+        //Initialize our RecycleView
+        Paired_Devices = (RecyclerView) findViewById(R.id.RecycleView);
+        Paired_Devices.setHasFixedSize(true);
 
-        //Connect "pointer" to "object"
-        Paired_Devices = (ListView) findViewById(R.id.paired_devices);
+    }
 
-        Paired_Devices.setAdapter(Paired_Devices_Elements);
+    public void onResume(){
+        super.onResume();
+
+        //Check bluetooth state
+        CheckBluetoothStatus();
+
+        //We need our layoutManager if not RecycleView will crash our app.
+        Paired_Devices_Layout = new RecycleView_Adapter(getApplicationContext(), getData());
+        Paired_Devices.setAdapter(Paired_Devices_Layout);
+        Paired_Devices.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+
+        //"House" cleaning
+        data.clear();
+
+        //Prepare our device
+        Bluetooth = BluetoothAdapter.getDefaultAdapter();
+
+        //Get our paired devices list and add it to the Paired_Device list
+        Set<BluetoothDevice> connect = Bluetooth.getBondedDevices();
+
+        if(connect.size() > 0){
+            for (BluetoothDevice device : connect) {
+                RecycleView_Element current = new RecycleView_Element();
+                current.Device_Name = device.getName();
+                //current.Device_Type = device_Types[device.getType()];
+                data.add(current);
+            }
+        }
 
     }
 
@@ -37,7 +71,6 @@ public class Setup extends Activity {
      * If Off, ask user to turn it On.
      */
     private void CheckBluetoothStatus(){
-
         Bluetooth = BluetoothAdapter.getDefaultAdapter();
 
         //Check if device has bluetooth
@@ -52,5 +85,10 @@ public class Setup extends Activity {
                 startActivityForResult(enable_Bluetooth, 1);
             }
         }
+    }
+
+    //Getter
+    public List<RecycleView_Element> getData() {
+        return data;
     }
 }
