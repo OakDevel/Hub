@@ -1,18 +1,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
                 android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin"
                 android:paddingBottom="@dimen/activity_vertical_margin"
                 tools:context="pt.Andr3Carvalh0.Lights.Setup">
 
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:id="@+id/imageView"
+        android:background="@color/cardview_light_background"
+        android:src="@color/colorPrimaryDark"
+        />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/RecycleView"
         android:scrollbars="vertical"
-        android:layout_height="match_parent"
-        android:layout_width="wrap_content">
+        android:layout_height="280dp"
+        android:layout_width="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true">
     </android.support.v7.widget.RecyclerView>
 
 

@@ -2,22 +2,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:orientation="horizontal">
+              android:orientation="horizontal"
+              android:weightSum="1">
 
-    <ImageView
-        android:id="@+id/RecycleView_Image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:padding="8dp"
-        android:src="@android:drawable/ic_secure"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/RecycleView_Text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:padding="8dp"
-        android:text="Olá"/>
+        <ImageView
+                android:id="@+id/RecycleView_Image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_secure"
+                android:adjustViewBounds="false"
+                android:layout_alignTop="@+id/RecycleView_Text"
+                android:layout_toStartOf="@+id/RecycleView_Text"
+                android:layout_marginEnd="63dp"/>
+
+        <TextView
+                android:id="@+id/RecycleView_Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:padding="8dp"
+                android:textAlignment="center"
+                android:adjustViewBounds="true"
+                android:text="Olá"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"/>
+    </RelativeLayout>
 
 </LinearLayout>
