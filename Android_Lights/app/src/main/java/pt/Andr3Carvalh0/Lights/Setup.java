@@ -3,7 +3,6 @@ package pt.Andr3Carvalh0.Lights;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,7 +18,7 @@ public class Setup extends Activity {
     private RecycleView_Adapter Paired_Devices_Layout;
 
     List<RecycleView_Element> data = new ArrayList<>();
-    //int[] device_Types = {R.drawable.ic_DEVICE_TYPE_UNKNOWN, R.drawable.ic_DEVICE_TYPE_CLASSIC, R.drawable.ic_DEVICE_TYPE_LE, R.drawable.ic_DEVICE_TYPE_DUAL};
+    int[] device_Types = {R.drawable.ic_device_type_unknown, R.drawable.ic_device_type_classic, R.drawable.ic_device_type_le, R.drawable.ic_device_type_dual};
 
     private BluetoothAdapter Bluetooth;
 
@@ -58,7 +57,7 @@ public class Setup extends Activity {
             for (BluetoothDevice device : connect) {
                 RecycleView_Element current = new RecycleView_Element();
                 current.Device_Name = device.getName();
-                //current.Device_Type = device_Types[device.getType()];
+                current.Device_Type = device_Types[device.getType()];
                 data.add(current);
             }
         }
