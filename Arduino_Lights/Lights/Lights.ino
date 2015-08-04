@@ -1,41 +1,61 @@
-#define LED_R 9
-#define LED_G 11
-#define LED_B 12
+#define LEFT_R 11
+#define LEFT_G 10
+#define LEFT_B 9
+
+#define RIGHT_R 8
+#define RIGHT_G 7
+#define RIGHT_B 6
 
 const double increment = 400; 
 
 int estado_lamp;
 
-float diference_R;
-float diference_G;
-float diference_B;
-
 //For the LEDs
-float RGB_start[] = {0, 0, 0}; //[0] --> Red, [1] --> Green,  //[2] --> Blue
-float RGB_end[] = {0, 0, 0};   //[0] --> Red, [1] --> Green,  //[2] --> Blue
+int LEFT_RGB[] = {0, 0, 0}; //[0] --> Red, [1] --> Green,  //[2] --> Blue
+int RIGHT_RGB[] = {0, 0, 0}; //[0] --> Red, [1] --> Green,  //[2] --> Blue
+
+//Fading LEDs when changing color
+float diff_left_R;
+float diff_left_G;
+float diff_left_B;
+
+float diff_right_R;
+float diff_right_G;
+float diff_right_B;
+
+//int LEFT_INITIAL[] = {0,0,0};
+//int LEFT_END[] = {0,0,0};
+
+//int RIGHT_INITIAL[] = {0,0,0};
+//int RIGHT_END[] = {0,0,0};
 
 //Stores data from Serial
 String data;
 
 void setup() {
-  //Comunication Speed
+  //Comunication Speed -- DEBUG
   Serial.begin(9600);
   
   //Self-Explanatory
-  pinMode(LED_R, OUTPUT);
-  pinMode(LED_G, OUTPUT);
-  pinMode(LED_B, OUTPUT);
+  //Left side
+  pinMode(LEFT_R, OUTPUT);
+  pinMode(LEFT_G, OUTPUT);
+  pinMode(LEFT_B, OUTPUT);
   
-  //Start our "start" array with 0 value
-  for(int i = 0; i < 3; i++){
-    RGB_start[i] = 0;
-  }
-
+  //Right side
+  pinMode(RIGHT_R, OUTPUT);
+  pinMode(RIGHT_G, OUTPUT);
+  pinMode(RIGHT_B, OUTPUT);
+    
   //Start with the lamp turn off
-  analogWrite(LED_R, 0);
-  analogWrite(LED_G, 0);
-  analogWrite(LED_B, 0);
+  analogWrite(LEFT_R, 0);
+  analogWrite(LEFT_G, 0);
+  analogWrite(LEFT_B, 0);
   
+  analogWrite(RIGHT_R, 0);
+  analogWrite(RIGHT_G, 0);
+  analogWrite(RIGHT_B, 0);
+
 }
 
 void loop() {
@@ -43,56 +63,78 @@ void loop() {
   if(Serial.available() > 0){
         
     //Data will be sent in this format:
-    //  x:xxx:xxx:xxx&
-    //  state : RED : GREEN : BLUE : To know the end of the string
+    //  x:xxx:xxx:xxx:xxx:xxx&
+    //  state : LEFT_RED : RIGHT_RED : LEFT_GREEN : RIGHT_GREEN : LEFT_BLUE : RIGHT_BLUE
     data = Serial.readStringUntil('&');
         
     //We need to break the string into various parts
     estado_lamp = Separador(data, 0).toInt();
-        
-    for(int i = 0; i < 3; i++){
-      RGB_end[i] = Separador(data, i+1).toInt();
+     
+    int left_aux = 0;
+    int right_aux = 0;
+    
+    for(int i = 1; i <= 6; i++){
+      //If it's a even number we add it to the right side
+      if(i%2 == 0){
+        RIGHT_RGB[right_aux] = Separador(data, i).toInt();
+        right_aux++;
+
+      }else{
+        LEFT_RGB[left_aux] = Separador(data, i).toInt();
+        left_aux++;
+      } 
     }
     
-    //Make corrections
-    //If the input is greater than 255
-    if(RGB_end[0] > 255)RGB_end[0] = 255;
-    if(RGB_end[1] > 255)RGB_end[1] = 255;
-    if(RGB_end[2] > 255)RGB_end[2] = 255;
+    ////////////////////////////////////////////////////
+    //////////////////      DEBUG    //////////////////
+    ///////////////////////////////////////////////////
+    Serial.print("Lamp state: ");
+    Serial.print(estado_lamp);
     
-    //If the input is lower than 0
-    if(RGB_end[0] < 0)RGB_end[0] = 0;
-    if(RGB_end[1] < 0)RGB_end[1] = 0;
-    if(RGB_end[2] < 0)RGB_end[2] = 0;
-        
+    Serial.println();
+    
+    Serial.print("Left side RGB: ");
+    Serial.print(LEFT_RGB[0]);
+    Serial.print(", ");
+    Serial.print(LEFT_RGB[1]);
+    Serial.print(", ");
+    Serial.print(LEFT_RGB[2]);
+
+    Serial.println();
+
+    Serial.print("Right side RGB: ");
+    Serial.print(RIGHT_RGB[0]);
+    Serial.print(", ");
+    Serial.print(RIGHT_RGB[1]);
+    Serial.print(", ");
+    Serial.print(RIGHT_RGB[2]);
+
+    /////////////////////////////////////////////////
+    
     //change states if state is 1
     if(estado_lamp == 1){
-      //Calculate an incremento to do the LED fading
-      diference_R = (RGB_end[0] - RGB_start[0]) / increment;
-      diference_G = (RGB_end[1] - RGB_start[1]) / increment;
-      diference_B = (RGB_end[2] - RGB_start[2]) / increment;
-
-      for(int i = 0; i <= increment; i++){
-        RGB_start[0] += diference_R;
-	RGB_start[1] += diference_G;
-	RGB_start[2] += diference_B;
-
-	//Turn On
-      	analogWrite(LED_R, RGB_start[0]);
-      	analogWrite(LED_G, RGB_start[1]);
-      	analogWrite(LED_B, RGB_start[2]);
-	}
-    }
-    else{
+      //Turn On
+      analogWrite(LEFT_R, LEFT_RGB[0]);
+      analogWrite(LEFT_G, LEFT_RGB[1]);
+      analogWrite(LEFT_B, LEFT_RGB[2]);
+      
+      analogWrite(RIGHT_R, RIGHT_RGB[0]);
+      analogWrite(RIGHT_G, RIGHT_RGB[1]);
+      analogWrite(RIGHT_B, RIGHT_RGB[2]);
+    }else{
       //Turn Off
-      analogWrite(LED_R, 0);
-      analogWrite(LED_G, 0);
-      analogWrite(LED_B, 0);
+      analogWrite(LEFT_R, 0);
+      analogWrite(LEFT_G, 0);
+      analogWrite(LEFT_B, 0);
+      analogWrite(RIGHT_R, 0);
+      analogWrite(RIGHT_G, 0);
+      analogWrite(RIGHT_B, 0);
     }
+    
     //Just to be sure, we copy the values that we received to our "start" array
-    for(int i = 0; i < 3; i++){
-      RGB_start[i] = RGB_end[i];
-    }
+   // for(int i = 0; i < 3; i++){
+     // RGB_start[i] = RGB_end[i];
+    //}
   }
 }
 
