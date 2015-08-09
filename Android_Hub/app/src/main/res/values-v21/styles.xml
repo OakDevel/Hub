@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Main view styles -->
+    <style name="Main" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Customize the titlebars -->
+        <item name="android:colorPrimary">@color/colorPrimary</item>
+
+        <!-- Customize the statusbar -->
+        <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
+
+        <!-- Customize the accent of the buttons, checkboxes, etc -->
+        <item name="android:colorAccent">@color/colorPrimary</item>
+    </style>
+
+
+    <!-- Setup view styles -->
+    <style name="Setup" parent="android:Theme.Material.NoActionBar">
+        <!-- Customize the statusbar -->
+        <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
+
+        <!-- Customize the accent of the buttons, checkboxes, etc -->
+        <item name="android:colorAccent">@color/colorPrimary</item>
+    </style>
+
+
+    <style name="Next">
+        <item name="android:paddingEnd">30dp</item>
+        <item name="android:gravity">center_vertical|end</item>
+        <item name="android:drawableRight">@drawable/ic_next_enable</item>
+    </style>
+
+</resources>

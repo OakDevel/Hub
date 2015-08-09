@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Hub</string>
+    <string name="title_activity_setup">Setup</string>
+    <string name="Next_Button">Next</string>
+    <string name="title_activity_hub">Hub</string>
+
+</resources>
