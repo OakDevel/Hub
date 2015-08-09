@@ -4,6 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class MainActivity extends Activity {
 
@@ -13,6 +20,11 @@ public class MainActivity extends Activity {
 
         //Check if it's the first time opening the app
         SharedPreferences Preferences = this.getSharedPreferences("project.wardenclyffe.Hub", 0);
+
+        Set<String> MacAddress;
+
+        MacAddress = Preferences.getStringSet("Device_MAC", null);
+        Log.i("MACADDRESS_STORED", String.valueOf(MacAddress));
 
         boolean Setup = Preferences.getBoolean("Setup", true);
 

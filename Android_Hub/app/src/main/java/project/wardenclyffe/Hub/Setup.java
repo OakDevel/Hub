@@ -1,29 +1,29 @@
 package project.wardenclyffe.Hub;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
-
 /**
- * TODO: Make Javadoc, Store selected device MAC Address, Enable Next Button when device is selected
+ * TODO: Make Javadoc
  */
 public class Setup extends Activity {
     private RecyclerView Paired_Devices;
@@ -34,7 +34,12 @@ public class Setup extends Activity {
     private String device_address;
 
     List<RecycleView_Element> data = new ArrayList<>();
+
+    //To list every device that we have paired
     Set<BluetoothDevice> connect;
+
+    //To list every device that we haven't chosen, but are paired
+    Set<BluetoothDevice> Devices_2Use = new HashSet<>();
 
     private BluetoothAdapter Bluetooth;
 
@@ -59,34 +64,32 @@ public class Setup extends Activity {
             public void OnClick(View v, int position) {
                 int i = 0;
 
-                if(getRow() == getRow_anterior()){
-                    for (BluetoothDevice device : connect) {
+                Log.i("MACADDRESS_TABLEVIEW", String.valueOf(Devices_2Use));
+
+                if(getRow() == getRow_anterior() && next_button.isEnabled()){
+                    for (BluetoothDevice device : Devices_2Use) {
                         if (i == getRow()) {
+                            setAddress(device.getAddress());
 
                             next_button.setEnabled(false);
                             next_button.setTextColor(getApplication().getResources().getColor(R.color.Text_locked));
                             int next_img = R.drawable.ic_next_disable;
                             next_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, next_img, 0);
-                            //DEBUG
-                            Toast.makeText(getApplicationContext(), "Row is the same as before", Toast.LENGTH_SHORT).show();
                         }
                         i++;
                     }
                 }
                 else {
-                    for (BluetoothDevice device : connect) {
-                        if (i == getRow()) {
+                    for (BluetoothDevice device : Devices_2Use) {
 
-                            setAddress(device.getAddress());
+                         if (i == getRow() && !next_button.isEnabled()) {
+                             setAddress(device.getAddress());
 
-                            next_button.setEnabled(true);
-                            next_button.setTextColor(getApplication().getResources().getColor(R.color.Text));
-                            int next_img = R.drawable.ic_next_enable;
-                            next_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, next_img, 0);
-                            setRow_anterior(getRow());
-
-                            //DEBUG
-                            Toast.makeText(getApplicationContext(), getAddress(), Toast.LENGTH_SHORT).show();
+                             next_button.setEnabled(true);
+                             next_button.setTextColor(getApplication().getResources().getColor(R.color.Text));
+                             int next_img = R.drawable.ic_next_enable;
+                             next_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, next_img, 0);
+                             setRow_anterior(getRow());
                         }
                         i++;
                     }
@@ -102,23 +105,33 @@ public class Setup extends Activity {
 
         next_button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Set<String> MacAddress;
+                Set<String> MacAddress = null;
+                Set<String> New_Mac_Address = new HashSet<String>();
 
                 SharedPreferences Reader = getSharedPreferences("project.wardenclyffe.Hub", 0);
-                MacAddress = Reader.getStringSet("Device_MAC", null);
                 SharedPreferences.Editor Editor = getSharedPreferences("project.wardenclyffe.Hub", 0).edit();
 
-                //Is the first device we setup
-                if(MacAddress == null){
-                    MacAddress.add(getAddress());
-                    Editor.putStringSet("Device_MAC", MacAddress);
-                   // Editor.putBoolean("Setup", false);
-                    Editor.commit();
-                } else {
-                    MacAddress.add(getAddress());
-                    Editor.putStringSet("Device_MAC", MacAddress);
-                    Editor.commit();
+                try {
+                    MacAddress = Reader.getStringSet("Device_MAC", null);
+                }catch (Exception e){
+
                 }
+                if(MacAddress != null) {
+                    for (String aux : MacAddress) {
+                        New_Mac_Address.add(aux);
+                    }
+                }
+                New_Mac_Address.add(getAddress());
+
+                Log.i("MACADDRESS_2SAVE", String.valueOf(New_Mac_Address));
+
+                Editor.putStringSet("Device_MAC", New_Mac_Address);
+                Editor.apply();
+
+                //We have finished the setup
+                Editor.putBoolean("Setup", false);
+
+                Editor.commit();
 
                 Intent show_Hub = new Intent(getApplicationContext(), Hub.class);
                 startActivity(show_Hub);
@@ -143,75 +156,29 @@ public class Setup extends Activity {
         connect = Bluetooth.getBondedDevices();
 
         SharedPreferences Reader = getSharedPreferences("project.wardenclyffe.Hub", 0);
-        Set<String> Address = Reader.getStringSet("Device_MAC", null);
 
-        if (connect.size() > 0) {
-            for (BluetoothDevice device : connect) {
+        Set<String> Address = null;
+        try {
+            Address = Reader.getStringSet("Device_MAC", null);
+        } catch (NullPointerException e) {
 
-                RecycleView_Element current = new RecycleView_Element();
-                current.Device_Name = device.getName();
+        }
 
-                switch (device.getBluetoothClass().getMajorDeviceClass()){
-                    //Audio_Video
-                    case 1024:
-                        current.Device_Type = R.drawable.ic_device_speaker;
-                        break;
-
-                    //Computer
-                    case 256:
-                        current.Device_Type = R.drawable.ic_device_desktop;
-                        break;
-
-                    //Health
-                    case 2304:
-                        current.Device_Type =  R.drawable.ic_device_watch;
-                        break;
-
-                    //Imaging
-                    case 1536:
-                        current.Device_Type = R.drawable.ic_device_image;
-                        break;
-
-                    //Misc
-                    case 0:
-                        current.Device_Type = R.drawable.ic_device_hub;
-                        break;
-
-                    //Networking
-                    case 768:
-                        current.Device_Type = R.drawable.ic_device_router;
-                        break;
-
-                    //Peripheral
-                    case 1280:
-                        current.Device_Type = R.drawable.ic_device_phonelink;
-                        break;
-
-                     //Phone
-                    case 512:
-                        current.Device_Type = R.drawable.ic_device_phone;
-                        break;
-
-                    //Toy
-                    case 2048:
-                        current.Device_Type = R.drawable.ic_device_toys;
-                        break;
-
-                    //Uncategorized
-                    case 7936:
-                        current.Device_Type =  R.drawable.ic_device_unknown;
-                        break;
-
-                    //Wearable
-                    case 1792:
-                        current.Device_Type =  R.drawable.ic_device_watch;
-                        break;
-                    }
-                data.add(current);
+        if (Address != null) {
+            if (Address.size() < connect.size()) {
+                setupRecycleView();
+            } else {
+                displayMessage();
+            }
+        }else{
+            if(connect.size() > 0){
+                setupRecycleView();
+            }
+            else{
+                displayMessage();
             }
         }
     }
-
     /**
      * Check if device support bluetooth.
      * If so, check is it's On or Off.
@@ -234,6 +201,131 @@ public class Setup extends Activity {
     }
 
     /**
+     * Check if device has been setup before
+     */
+    private boolean hasBeenConnected(String MAC){
+        SharedPreferences Reader = getSharedPreferences("project.wardenclyffe.Hub", 0);
+        Set<String> MacAddress = Reader.getStringSet("Device_MAC", null);
+
+        try{
+            for(String adr : MacAddress){
+                if(MAC.equals(adr)){
+                    return true;
+                }
+            }
+
+        }catch (NullPointerException e){
+
+        }
+        return false;
+    }
+
+    public void setupRecycleView(){
+        for (BluetoothDevice device : connect) {
+
+            if (hasBeenConnected(device.getAddress())) {
+
+            } else {
+                Devices_2Use.add(device);
+
+                RecycleView_Element current = new RecycleView_Element();
+                current.Device_Name = device.getName();
+
+                switch (device.getBluetoothClass().getMajorDeviceClass()) {
+                    //Audio_Video
+                    case 1024:
+                        current.Device_Type = R.drawable.ic_device_speaker;
+                        break;
+
+                    //Computer
+                    case 256:
+                        current.Device_Type = R.drawable.ic_device_desktop;
+                        break;
+
+                    //Health
+                    case 2304:
+                        current.Device_Type = R.drawable.ic_device_watch;
+                        break;
+
+                    //Imaging
+                    case 1536:
+                        current.Device_Type = R.drawable.ic_device_image;
+                        break;
+
+                    //Misc
+                    case 0:
+                        current.Device_Type = R.drawable.ic_device_hub;
+                        break;
+
+                    //Networking
+                    case 768:
+                        current.Device_Type = R.drawable.ic_device_router;
+                        break;
+
+                    //Peripheral
+                    case 1280:
+                        current.Device_Type = R.drawable.ic_device_phonelink;
+                        break;
+
+                    //Phone
+                    case 512:
+                        current.Device_Type = R.drawable.ic_device_phone;
+                        break;
+
+                    //Toy
+                    case 2048:
+                        current.Device_Type = R.drawable.ic_device_toys;
+                        break;
+
+                    //Uncategorized
+                    case 7936:
+                        current.Device_Type = R.drawable.ic_device_unknown;
+                        break;
+
+                    //Wearable
+                    case 1792:
+                        current.Device_Type = R.drawable.ic_device_watch;
+                        break;
+                }
+                data.add(current);
+            }
+        }
+    }
+
+    public void displayMessage(){
+        Log.i("NO_DEVICES_PAIRED", "No devices paired");
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set title
+        alertDialogBuilder.setTitle("No devices paired");
+
+        // set dialog message
+        alertDialogBuilder.setMessage("Please pair a new device, from the Settings app.");
+
+        alertDialogBuilder.setCancelable(false);
+
+        alertDialogBuilder.setPositiveButton("Go!", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.android.settings");
+                startActivity(launchIntent);
+            }
+        });
+        alertDialogBuilder.setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                finish();
+            }
+        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+
+    /**
      * Setter for row anterior
      */
     public void setRow_anterior(int row){
@@ -253,7 +345,6 @@ public class Setup extends Activity {
     public void setRow(int row){
         this.row = row;
     }
-
 
     /**
      * Getter for row
