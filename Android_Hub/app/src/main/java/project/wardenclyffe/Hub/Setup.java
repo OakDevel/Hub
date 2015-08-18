@@ -16,6 +16,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TableRow;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ public class Setup extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
         final Button next_button = (Button) findViewById(R.id.next_button);
+        final TableRow tableRow = (TableRow) findViewById(R.id.TableRow);
 
         //Initialize our RecycleView
         Paired_Devices = (RecyclerView) findViewById(R.id.RecycleView);
@@ -63,6 +65,7 @@ public class Setup extends Activity {
             @Override
             public void OnClick(View v, int position) {
                 int i = 0;
+
 
                 Log.i("MACADDRESS_TABLEVIEW", String.valueOf(Devices_2Use));
 
@@ -279,7 +282,7 @@ public class Setup extends Activity {
 
                     //Uncategorized
                     case 7936:
-                        current.Device_Type = R.drawable.ic_device_unknown;
+                        current.Device_Type = R.drawable.ic_device_watch;
                         break;
 
                     //Wearable
@@ -406,6 +409,7 @@ public class Setup extends Activity {
 
             if(child != null && cl !=null && gestureDetector.onTouchEvent(e)){
                 setRow(Paired_Devices.getChildAdapterPosition(child));
+
                 cl.OnClick(child, Paired_Devices.getChildAdapterPosition(child));
             }
 

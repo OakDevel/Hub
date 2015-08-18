@@ -3,5 +3,8 @@
     <string name="title_activity_setup">Setup</string>
     <string name="Next_Button">Next</string>
     <string name="title_activity_hub">Hub</string>
-
+    <string name="action_about">About</string>
+    <string name="action_pair">Connect to a new device</string>
+    <string name="drawer_open">Open drawer</string>
+    <string name="drawer_close">Close drawer</string>
 </resources>

@@ -8,7 +8,8 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="84dp"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:id="@+id/TableRow">
 
 
         <RelativeLayout
@@ -47,7 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Device"
+                android:text="Device/Categorie"
                 android:gravity="left|center"
                 android:layout_gravity="left|center"
                 android:layout_weight="0.74"
