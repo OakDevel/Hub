@@ -10,6 +10,8 @@ const double increment = 400;
 
 int estado_lamp;
 
+String type = "Light";
+
 //For the LEDs
 int LEFT_RGB[] = {0, 0, 0}; //[0] --> Red, [1] --> Green,  //[2] --> Blue
 int RIGHT_RGB[] = {0, 0, 0}; //[0] --> Red, [1] --> Green,  //[2] --> Blue
@@ -110,25 +112,51 @@ void loop() {
     Serial.print(RIGHT_RGB[2]);
 
     /////////////////////////////////////////////////
-    
-    //change states if state is 1
-    if(estado_lamp == 1){
-      //Turn On
-      analogWrite(LEFT_R, LEFT_RGB[0]);
-      analogWrite(LEFT_G, LEFT_RGB[1]);
-      analogWrite(LEFT_B, LEFT_RGB[2]);
+
+    switch(estado_lamp){
+      case 0:
+        //Turn off our device
+        analogWrite(LEFT_R, 0);
+        analogWrite(LEFT_G, 0);
+        analogWrite(LEFT_B, 0);
       
-      analogWrite(RIGHT_R, RIGHT_RGB[0]);
-      analogWrite(RIGHT_G, RIGHT_RGB[1]);
-      analogWrite(RIGHT_B, RIGHT_RGB[2]);
-    }else{
-      //Turn Off
-      analogWrite(LEFT_R, 0);
-      analogWrite(LEFT_G, 0);
-      analogWrite(LEFT_B, 0);
-      analogWrite(RIGHT_R, 0);
-      analogWrite(RIGHT_G, 0);
-      analogWrite(RIGHT_B, 0);
+        analogWrite(RIGHT_R, 0);
+        analogWrite(RIGHT_G, 0);
+        analogWrite(RIGHT_B, 0);
+
+        break;
+
+      case 1:
+        //Turn on our device
+        analogWrite(LEFT_R, LEFT_RGB[0]);
+        analogWrite(LEFT_G, LEFT_RGB[1]);
+        analogWrite(LEFT_B, LEFT_RGB[2]);
+        
+        analogWrite(RIGHT_R, RIGHT_RGB[0]);
+        analogWrite(RIGHT_G, RIGHT_RGB[1]);
+        analogWrite(RIGHT_B, RIGHT_RGB[2]);
+        
+        break;
+        
+      case 2:
+        //Send data to confirm that this device is supported by our android companion app.
+        Serial.println("Supported");
+
+        //Need a delay so we can be a sure that our android device got it.
+        delay(500);
+        
+        Serial.read();
+        break;
+
+      case 3:
+        //Send data to confirm that this device is supported by our android companion app.
+        Serial.println(type);
+
+        //Need a delay so we can be a sure that our android device got it.
+        delay(500);
+        
+        Serial.read();
+        break;
     }
     
     //Just to be sure, we copy the values that we received to our "start" array
