@@ -2,13 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_search"
-        android:orderInCategory="100"
-        android:title="@string/action_about"
-        android:icon="@drawable/ic_search"
-        app:showAsAction="always" />
-
-    <item
         android:id="@+id/action_pair"
         android:orderInCategory="100"
         android:title="@string/action_pair"

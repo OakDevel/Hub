@@ -35,7 +35,16 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentStart="true" >
 
+
         </ScrollView>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Turn on"
+            android:id="@+id/TURN_ON"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
 
     </RelativeLayout>
 
