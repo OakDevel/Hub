@@ -1,0 +1,97 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.27"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        >
+
+        <View
+            android:id="@+id/Header"
+            android:layout_width="match_parent"
+            android:layout_height="175dp"
+            android:background="@color/Header_TOP"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true" />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="26px"
+            android:background="@color/Header_BOTTOM"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/Header"
+            android:id="@+id/view2" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="    Checking Connection..."
+            android:id="@+id/Title_Checking"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignTop="@+id/view2"
+            android:maxLines="1"
+            android:gravity="center_vertical"
+            android:shadowColor="@color/Separator"
+            android:textColor="@color/white"
+            android:textSize="20dp" />
+
+
+    </RelativeLayout>
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_alignParentBottom="true"
+        android:elevation="0dp"
+        android:layout_gravity="top"
+        android:alpha="1"
+        android:foregroundGravity="top"
+        android:indeterminate="true"
+        android:maxHeight="8dp" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.58"
+        android:background="@color/page_background">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="    This can take a while"
+            android:id="@+id/warning"
+            android:layout_marginTop="25dp"
+            android:layout_alignParentStart="true" />
+
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.07">
+
+        <View
+            android:id="@+id/Footer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/Footer"
+
+            />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1px"
+            android:background="@color/Separator"/>
+    </FrameLayout>
+</LinearLayout>

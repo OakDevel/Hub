@@ -15,14 +15,14 @@
         <View
             android:id="@+id/Header"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="175dp"
             android:background="@color/Header_TOP"
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true" />
 
         <View
             android:layout_width="wrap_content"
-            android:layout_height="1px"
+            android:layout_height="26px"
             android:background="@color/Header_BOTTOM"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"

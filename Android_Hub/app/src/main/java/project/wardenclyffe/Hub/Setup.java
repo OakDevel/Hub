@@ -1,14 +1,17 @@
 package project.wardenclyffe.Hub;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,29 +21,28 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TableRow;
 import android.widget.Toast;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
-/**
- * TODO: Make Javadoc
- */
 public class Setup extends Activity {
+    private String TAG = "SETUP";
+
     private RecyclerView Paired_Devices;
     private RecycleView_Adapter Paired_Devices_Layout;
-    private int row;
-    private int row_anterior = -1;
 
+    //Selected device MAC Address
     private String device_address;
 
+    //Every device to display
     List<RecycleView_Element> data = new ArrayList<>();
 
     //To list every device that we have paired
-    Set<BluetoothDevice> connect;
-
-    //To list every device that we haven't chosen, but are paired
-    Set<BluetoothDevice> Devices_2Use = new HashSet<>();
+    Set<BluetoothDevice> connected;
 
     private BluetoothAdapter Bluetooth;
 
@@ -48,12 +50,9 @@ public class Setup extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
-        final Button next_button = (Button) findViewById(R.id.next_button);
-        final TableRow tableRow = (TableRow) findViewById(R.id.TableRow);
 
         //Initialize our RecycleView
         Paired_Devices = (RecyclerView) findViewById(R.id.RecycleView);
-        Paired_Devices.setHasFixedSize(true);
 
         //Setup our layout
         Paired_Devices_Layout = new RecycleView_Adapter(getApplicationContext(), data);
@@ -66,37 +65,23 @@ public class Setup extends Activity {
             public void OnClick(View v, int position) {
                 int i = 0;
 
-
-                Log.i("MACADDRESS_TABLEVIEW", String.valueOf(Devices_2Use));
-
-                if(getRow() == getRow_anterior() && next_button.isEnabled()){
-                    for (BluetoothDevice device : Devices_2Use) {
-                        if (i == getRow()) {
-                            setAddress(device.getAddress());
-
-                            next_button.setEnabled(false);
-                            next_button.setTextColor(getApplication().getResources().getColor(R.color.Text_locked));
-                            int next_img = R.drawable.ic_next_disable;
-                            next_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, next_img, 0);
-                        }
-                        i++;
+                for(RecycleView_Element aux : data){
+                    if(i == position){
+                        Log.i(TAG + " - Device Selected", aux.Device_Address);
+                        setAddress(aux.Device_Address);
                     }
+                    i++;
                 }
-                else {
-                    for (BluetoothDevice device : Devices_2Use) {
 
-                         if (i == getRow() && !next_button.isEnabled()) {
-                             setAddress(device.getAddress());
+                Intent calling_security = new Intent(getApplicationContext(), Connecting.class);
+                calling_security.putExtra("Address", getAddress());
 
-                             next_button.setEnabled(true);
-                             next_button.setTextColor(getApplication().getResources().getColor(R.color.Text));
-                             int next_img = R.drawable.ic_next_enable;
-                             next_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, next_img, 0);
-                             setRow_anterior(getRow());
-                        }
-                        i++;
-                    }
-                }
+                //Bundle animation = ActivityOptions.makeCustomAnimation(getApplicationContext(), R.anim.slide_in_left, R.anim.slide_out_left).toBundle();
+                //startActivity(calling_security, animation);
+                startActivity(calling_security);
+
+                finish();
+
             }
 
             @Override
@@ -105,42 +90,6 @@ public class Setup extends Activity {
             }
         }));
 
-
-        next_button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Set<String> MacAddress = null;
-                Set<String> New_Mac_Address = new HashSet<String>();
-
-                SharedPreferences Reader = getSharedPreferences("project.wardenclyffe.Hub", 0);
-                SharedPreferences.Editor Editor = getSharedPreferences("project.wardenclyffe.Hub", 0).edit();
-
-                try {
-                    MacAddress = Reader.getStringSet("Device_MAC", null);
-                }catch (Exception e){
-
-                }
-                if(MacAddress != null) {
-                    for (String aux : MacAddress) {
-                        New_Mac_Address.add(aux);
-                    }
-                }
-                New_Mac_Address.add(getAddress());
-
-                Log.i("MACADDRESS_2SAVE", String.valueOf(New_Mac_Address));
-
-                Editor.putStringSet("Device_MAC", New_Mac_Address);
-                Editor.apply();
-
-                //We have finished the setup
-                Editor.putBoolean("Setup", false);
-
-                Editor.commit();
-
-                Intent show_Hub = new Intent(getApplicationContext(), Hub.class);
-                startActivity(show_Hub);
-                finish();
-            }
-        });
     }
 
     public void onResume() {
@@ -149,32 +98,35 @@ public class Setup extends Activity {
         //Check bluetooth state
         CheckBluetoothStatus();
 
-        //"House" cleaning
+        //"House" cleaning.Remove every element from our recycle view element list.
         data.clear();
 
         //Prepare our device
         Bluetooth = BluetoothAdapter.getDefaultAdapter();
 
         //Get our paired devices list and add it to the Paired_Device list
-        connect = Bluetooth.getBondedDevices();
+        connected = Bluetooth.getBondedDevices();
 
         SharedPreferences Reader = getSharedPreferences("project.wardenclyffe.Hub", 0);
 
+        //Try to read our previous connected devices
         Set<String> Address = null;
         try {
-            Address = Reader.getStringSet("Device_MAC", null);
-        } catch (NullPointerException e) {
+            Address = Reader.getStringSet("Blacklist", null);
+        } catch (NullPointerException e) {}
 
-        }
-
+        //If we had already connected to a device previously
         if (Address != null) {
-            if (Address.size() < connect.size()) {
+            //Check if we have any other devices paired
+            if (Address.size() < connected.size()) {
                 setupRecycleView();
             } else {
                 displayMessage();
             }
+
+            //This is our first time(Setup)
         }else{
-            if(connect.size() > 0){
+            if(connected.size() > 0){
                 setupRecycleView();
             }
             else{
@@ -182,6 +134,7 @@ public class Setup extends Activity {
             }
         }
     }
+
     /**
      * Check if device support bluetooth.
      * If so, check is it's On or Off.
@@ -192,11 +145,13 @@ public class Setup extends Activity {
 
         //Check if device has bluetooth
         if (Bluetooth == null) {
+            Log.i(TAG, "Device doesn't have bluetooth");
             Toast.makeText(getBaseContext(), "Device doesn't have bluetooth", Toast.LENGTH_SHORT).show();
             finish();
         } else {
             if (!Bluetooth.isEnabled()) {
                 //Ask user to turn on bluetooth
+                Log.i(TAG, "Asking user to turn on bluetooth");
                 Intent enable_Bluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enable_Bluetooth, 1);
             }
@@ -208,7 +163,7 @@ public class Setup extends Activity {
      */
     private boolean hasBeenConnected(String MAC){
         SharedPreferences Reader = getSharedPreferences("project.wardenclyffe.Hub", 0);
-        Set<String> MacAddress = Reader.getStringSet("Device_MAC", null);
+        Set<String> MacAddress = Reader.getStringSet("Blacklist", null);
 
         try{
             for(String adr : MacAddress){
@@ -216,7 +171,6 @@ public class Setup extends Activity {
                     return true;
                 }
             }
-
         }catch (NullPointerException e){
 
         }
@@ -224,79 +178,23 @@ public class Setup extends Activity {
     }
 
     public void setupRecycleView(){
-        for (BluetoothDevice device : connect) {
+        for (BluetoothDevice device : connected) {
 
-            if (hasBeenConnected(device.getAddress())) {
-
-            } else {
-                Devices_2Use.add(device);
+            //Only add devices that never had been connected.
+            if (!hasBeenConnected(device.getAddress())) {
 
                 RecycleView_Element current = new RecycleView_Element();
                 current.Device_Name = device.getName();
+                current.Device_Type = R.drawable.ic_device_toys;
+                current.Device_Address = device.getAddress();
 
-                switch (device.getBluetoothClass().getMajorDeviceClass()) {
-                    //Audio_Video
-                    case 1024:
-                        current.Device_Type = R.drawable.ic_device_speaker;
-                        break;
-
-                    //Computer
-                    case 256:
-                        current.Device_Type = R.drawable.ic_device_desktop;
-                        break;
-
-                    //Health
-                    case 2304:
-                        current.Device_Type = R.drawable.ic_device_watch;
-                        break;
-
-                    //Imaging
-                    case 1536:
-                        current.Device_Type = R.drawable.ic_device_image;
-                        break;
-
-                    //Misc
-                    case 0:
-                        current.Device_Type = R.drawable.ic_device_hub;
-                        break;
-
-                    //Networking
-                    case 768:
-                        current.Device_Type = R.drawable.ic_device_router;
-                        break;
-
-                    //Peripheral
-                    case 1280:
-                        current.Device_Type = R.drawable.ic_device_phonelink;
-                        break;
-
-                    //Phone
-                    case 512:
-                        current.Device_Type = R.drawable.ic_device_phone;
-                        break;
-
-                    //Toy
-                    case 2048:
-                        current.Device_Type = R.drawable.ic_device_toys;
-                        break;
-
-                    //Uncategorized
-                    case 7936:
-                        current.Device_Type = R.drawable.ic_device_watch;
-                        break;
-
-                    //Wearable
-                    case 1792:
-                        current.Device_Type = R.drawable.ic_device_watch;
-                        break;
-                }
                 data.add(current);
             }
         }
     }
 
     public void displayMessage(){
-        Log.i("NO_DEVICES_PAIRED", "No devices paired");
+        Log.i(TAG, "No devices paired");
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
@@ -327,46 +225,11 @@ public class Setup extends Activity {
         alertDialog.show();
     }
 
-
-    /**
-     * Setter for row anterior
-     */
-    public void setRow_anterior(int row){
-        this.row_anterior = row;
+    public void setAddress(String address) {
+        device_address = address;
     }
 
-    /**
-     * Getter for row anterior
-     */
-    public int getRow_anterior(){
-        return row_anterior;
-    }
-
-    /**
-     * Setter for row
-     */
-    public void setRow(int row){
-        this.row = row;
-    }
-
-    /**
-     * Getter for row
-     */
-    public int getRow(){
-        return row;
-    }
-
-    /**
-     * Setter for device MAC Address
-     */
-    public void setAddress(String address){
-        this.device_address = address;
-    }
-
-    /**
-     * Getter for device MAC Address
-     */
-    public String getAddress(){
+    public String getAddress() {
         return device_address;
     }
 
@@ -389,7 +252,6 @@ public class Setup extends Activity {
                    View child = Paired_Devices.findChildViewUnder(e.getX(), e.getY());
 
                     if(child != null && cl !=null){
-                        setRow(Paired_Devices.getChildAdapterPosition(child));
                         cl.OnLongClick(child, Paired_Devices.getChildAdapterPosition(child));
 
                     }
@@ -408,8 +270,6 @@ public class Setup extends Activity {
             View child = rv.findChildViewUnder(e.getX(), e.getY());
 
             if(child != null && cl !=null && gestureDetector.onTouchEvent(e)){
-                setRow(Paired_Devices.getChildAdapterPosition(child));
-
                 cl.OnClick(child, Paired_Devices.getChildAdapterPosition(child));
             }
 

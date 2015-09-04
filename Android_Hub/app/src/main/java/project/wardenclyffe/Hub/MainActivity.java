@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 public class MainActivity extends Activity {
+    private final boolean DEBUG = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,16 +30,24 @@ public class MainActivity extends Activity {
 
         boolean Setup = Preferences.getBoolean("Setup", true);
 
-        //If true will show the setup view
-        if (Setup) {
-            Intent show_Setup = new Intent(getApplicationContext(), Setup.class);
-            startActivity(show_Setup);
+        if(DEBUG){
+            Intent debug = new Intent(getApplicationContext(), Debug.class);
+            startActivity(debug);
             finish();
+        }
 
-        } else {
-            Intent show_Hub = new Intent(getApplicationContext(), Hub.class);
-            startActivity(show_Hub);
-            finish();
+        else{
+            //If true will show the setup view
+            if (Setup) {
+                Intent show_Setup = new Intent(getApplicationContext(), Setup.class);
+                startActivity(show_Setup);
+                finish();
+
+            } else {
+                Intent show_Hub = new Intent(getApplicationContext(), Hub.class);
+                startActivity(show_Hub);
+                finish();
+            }
         }
     }
 }

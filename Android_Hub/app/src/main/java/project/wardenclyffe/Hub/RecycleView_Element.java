@@ -7,5 +7,5 @@ package project.wardenclyffe.Hub;
 public class RecycleView_Element {
     int Device_Type;
     String Device_Name;
-    String MAC;
+    String Device_Address;
 }
